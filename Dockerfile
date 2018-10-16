@@ -1,11 +1,8 @@
 FROM php:5-fpm
 
-# http://stackoverflow.com/a/37426929
-RUN sed -i "s/httpredir.debian.org/`curl -s -D - http://httpredir.debian.org/demo/debian/ | awk '/^Link:/ { print $2 }' | sed -e 's@<http://\(.*\)/debian/>;@\1@g'`/" /etc/apt/sources.list
+RUN mkdir -p /usr/share/man/man1
 
-# First command is from: http://stackoverflow.com/a/37426929
-RUN sed -i "s/httpredir.debian.org/`curl -s -D - http://httpredir.debian.org/demo/debian/ | awk '/^Link:/ { print $2 }' | sed -e 's@<http://\(.*\)/debian/>;@\1@g'`/" /etc/apt/sources.list \
-    && apt-get update && apt-get install -y --no-install-recommends --fix-missing \
+RUN apt-get update && apt-get install -y --no-install-recommends --fix-missing \
         imagemagick \
         libevent-dev \
         ufraw \
@@ -14,12 +11,11 @@ RUN sed -i "s/httpredir.debian.org/`curl -s -D - http://httpredir.debian.org/dem
         unoconv \
         gpac \
         swftools \
-        openjdk-7-jre \
-        openjdk-7-jdk \
         locales \
-#        libmariadbclient-dev \
+        libmariadbclient-dev \
         pkg-config \
-#        libzmq-dev \ #Conflicts with libzmq3-dev
+		openjdk-8-jre-headless \
+        openjdk-8-jdk \
         libxml2-dev \
         libexpat1-dev \
         libzmq3-dev \
@@ -27,7 +23,6 @@ RUN sed -i "s/httpredir.debian.org/`curl -s -D - http://httpredir.debian.org/dem
         scons \
         inkscape \
         python-setuptools \
-#        libmemcache0 \
         libimage-exiftool-perl \
         git \
         libfreetype6-dev \
@@ -67,7 +62,7 @@ RUN sed -i "s/httpredir.debian.org/`curl -s -D - http://httpredir.debian.org/dem
         libxvidcore-dev \
         libdc1394-22-dev \
         libav-tools \
-        libmysqlclient-dev \
+        default-libmysqlclient-dev \
         # PHP requirements:
         libicu-dev libpng-dev libjpeg-dev libenchant-dev libmcrypt-dev libmagickwand-dev libcurl3-dev \
     && docker-php-ext-configure gd --enable-gd-native-ttf --with-jpeg-dir=/usr/lib/x86_64-linux-gnu --with-png-dir=/usr/lib/x86_64-linux-gnu \
@@ -102,7 +97,7 @@ RUN printf 'date.timezone=Europe/Berlin\nsession.cache_limiter=off\nshort_open_t
 
 RUN rm -rf /var/www/html \
     && cd /var/www \
-    && curl -sL https://www.phraseanet.com/builds/alchemy-fr-Phraseanet-v3.8.8.zip > phrasea.zip \
+    && curl -sL https://www.phraseanet.com/builds/alchemy-fr-Phraseanet-v4.0.3.zip > phrasea.zip \
     && unzip -q phrasea.zip \
     && rm phrasea.zip \
     && mv Phraseanet html \
@@ -124,13 +119,14 @@ RUN printf "display_errors=on\ndisplay_startup_errors=on\n" >> /usr/local/etc/ph
     } | tee /usr/local/etc/php-fpm.d/zz-phrasea.conf
 
 ENV ADMIN_EMAIL "phrasea@example.com"
-ENV ADMIN_PASSWORD "admin"
+ENV ADMIN_PASSWORD "Admin123"
 ENV WEB_HOST "localhost"
-#ENV DB_HOST
+ENV DB_HOST "db"
 ENV DB_APP_NAME "phraseanet_app"
 ENV DB_DATA_NAME "phraseanet_data"
 ENV DB_USER "phraseanet"
-#ENV DB_PASSWORD
+ENV DB_PASSWORD "34rc9rmc3"
+ENV DB_TEMPLATE "en-simple"
 
 WORKDIR /var/www/html
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
